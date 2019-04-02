@@ -1,146 +1,185 @@
-import numpy as np 
-import pandas as pd 
-import matplotlib.pyplot as plt
-import time
-from collections import Counter
-import re, nltk
-from nltk import word_tokenize
-from nltk.corpus import stopwords
-from nltk.stem import PorterStemmer
-from nltk.stem import WordNetLemmatizer
-import folium
-from matplotlib.colors import LinearSegmentedColormap
+#!/usr/bin/env python
+# coding: utf-8
+
+# ### 4. Exploratory Data Analysis
+
+# In[5]:
+
+
+get_ipython().run_line_magic('matplotlib', 'inline')
+import pandas as pd
+import numpy as np
+from matplotlib import pyplot as plt
+import math
+
+import seaborn as sns
+
+import cufflinks as cf
+
+import warnings
+warnings.filterwarnings('ignore')
+
 import missingno as msno
 
-df = pd.read_pickle('After_filling_Nans')
-df.Hotel_Name.describe()
 
-Hotel_Name_count = df.Hotel_Name.value_counts()
+# In[6]:
+
+
+#Load data dari file pickle Clean_Data
+data = pd.read_pickle('Clean_Data')
+
+
+# #### 4.1 Hotel_Name
+
+# In[7]:
+
+
+data.Hotel_Name.describe()
+
+
+# Terdapat __1492__ hotel dan yang paling banyak mendapat reviews adalah hotel __Britannia International Hotel Canary Wharf__ dengan total reviews sebanyak __4789__
+
+# In[9]:
+
+
+#Mengidentifikasi 10 teratas hotel dengan reviews terbanyak
+Hotel_Name_count = data.Hotel_Name.value_counts()
 Hotel_Name_count[:10].plot(kind='bar',figsize=(10,8))
+
+
+# #### 4.2 Average_Score
+
+# In[10]:
+
 
 from matplotlib.pylab import rcParams
 rcParams['figure.figsize'] = 50, 18
 rcParams["axes.labelsize"] = 16
-from matplotlib import pyplot
-import seaborn as sns
-data_plot = df[["Hotel_Name","Average_Score"]].drop_duplicates()
+
+
+# In[12]:
+
+
+avg_plot = data[["Hotel_Name","Average_Score"]].drop_duplicates()
 sns.set(font_scale = 2.5)
 a4_dims = (30, 12)
-fig, ax = pyplot.subplots(figsize=a4_dims)
-sns.countplot(ax = ax,x = "Average_Score",data=data_plot)
+fig, ax = plt.subplots(figsize=a4_dims)
+sns.countplot(ax = ax,x = "Average_Score",data=avg_plot)
+
+
+# __Average_Score__ hotel berada pada kisaran __8.0 - 9.1__
+
+# #### 4.3 Reviewer_Nationality
+
+# In[14]:
+
 
 text = ""
-for i in range(df.shape[0]):
-    text = " ".join([text,df["Reviewer_Nationality"].values[i]])
+for i in range(data.shape[0]):
+    text = " ".join([text,data["Reviewer_Nationality"].values[i]])
+
+
+# In[15]:
+
 
 from wordcloud import WordCloud
-wordcloud = WordCloud(background_color='black', width = 600,\
-                      height=200, max_font_size=50, max_words=40).generate(text)
+wordcloud = WordCloud(background_color='white', width = 600,                      height=200, max_font_size=50, max_words=40).generate(text)
 wordcloud.recolor(random_state=312)
 plt.imshow(wordcloud)
-plt.title("Wordcloud for countries")
+plt.title("Wordcloud for countries ")
 plt.axis("off")
 plt.show()
 
-df.Reviewer_Nationality.describe()
-Reviewer_Nat_Count = df.Reviewer_Nationality.value_counts()
+
+# In[16]:
+
+
+data.Reviewer_Nationality.describe()
+
+
+# Terdapat __227 Kewarganegaraan yang berbeda__. 
+# __United Kingdom__ menjadi __negara terbanyak__ yang memberikan review dengan __frekuensi reviews sebesar 245.110__ (__47.57%__ dari total reviews)
+
+# In[17]:
+
+
+#Mengidentifikasi 10 Teratas Kewarganegaraan yang Terbanyak Memberikan Reviews
+Reviewer_Nat_Count = data.Reviewer_Nationality.value_counts()
 print(Reviewer_Nat_Count[:10])
 
-df.Review_Date.describe()
 
-Review_Date_count = df.Review_Date.value_counts()
+# #### 4.4 Review_Date
+
+# In[18]:
+
+
+data.Review_Date.describe()
+
+
+# Terdapat 731 tanggal review yang berbeda.
+# __Mayoritas reviewers memberikan review pada tanggal 8/2/2017__ dengan __frekuensi reviews__ sebesar __2584__.
+
+# In[19]:
+
+
+#Mengidentifikasi 10 Tanggal Teratas Reviews Terbanyak
+Review_Date_count = data.Review_Date.value_counts()
 Review_Date_count[:10].plot(kind='bar')
 
-Reviewers_freq = df.Total_Number_of_Reviews_Reviewer_Has_Given.value_counts()
+
+# #### 4.5 Total_Number_of_Reviews_Reviewer_Has_Given
+
+# In[20]:
+
+
+Reviewers_freq = data.Total_Number_of_Reviews_Reviewer_Has_Given.value_counts()
 Reviewers_freq[:10].plot(kind='bar')
+
+
+# In[21]:
+
 
 Reviewers_freq[:10]
 
-temp_df = df.drop_duplicates(['Hotel_Name'])
-len(temp_df)
 
-map_osm = folium.Map(location=[47, 6], zoom_start=5, tiles = 'Stamen Toner' )
+# Sebanyak __154506 (29.99% dari total reviews) reviewers baru pertama kali memberikan review__
 
-temp_df.apply(lambda row:folium.Marker(location=[row["lat"], row["lng"]]).add_to(map_osm), axis=1)
+# #### 4.6 Review_Total_Positive_Word_Counts
 
-print(map_osm)
+# In[22]:
 
-pos_words = df.Review_Total_Positive_Word_Counts.value_counts()
-print(pos_words[:10])
 
-a = df.loc[df.Review_Total_Positive_Word_Counts == 0]
-print('No of completely Negative reviews in the dataset:',len(a))
+pos_words = data.Review_Total_Positive_Word_Counts.value_counts()
+pos_words[:10]
+
+
+# In[23]:
+
+
+a = data.loc[data.Review_Total_Positive_Word_Counts == 0]
+print('Number of completely Negative reviews in the dataset:',len(a))
 b = a[['Positive_Review','Negative_Review']]
-print(b[:10])
+b[:10]
 
-neg_words = df.Review_Total_Negative_Word_Counts.value_counts()
-print(neg_words[:10])
 
-a = df.loc[df.Review_Total_Negative_Word_Counts == 0 ]
+# __Sebanyak 35904 reviews adalah murni negatif__
+
+# #### 4.7 Review_Total_Negative_Word_Counts
+
+# In[24]:
+
+
+neg_words = data.Review_Total_Negative_Word_Counts.value_counts()
+neg_words[:10]
+
+
+# In[26]:
+
+
+a = data.loc[data.Review_Total_Negative_Word_Counts == 0 ]
 print('No of completely positive reviews in the dataset:',len(a))
 b = a[['Positive_Review','Negative_Review']]
-print(b[:10])
-
-df['pos_count']=0
-df['neg_count']=0
-
-df['Negative_Review']=[x.lower().strip() for x in df['Negative_Review']]
-df['Positive_Review']=[x.lower().strip() for x in df['Positive_Review']]
-
-df["neg_count"] = df.apply(lambda x: 1 
-    if x["Positive_Review"] == 'no positive' 
-    or x['Positive_Review']=='nothing' 
-    or x['Negative_Review']=='everything'
-    else x['pos_count'],axis = 1)
-
-df["pos_count"] = df.apply(lambda x: 1 
-    if x["Negative_Review"] == 'no negative' 
-    or x['Negative_Review']=='nothing' 
-    or x['Positive_Review']=='everything'
-    else x['pos_count'],axis = 1)
-
-df.pos_count.value_counts()
-
-df.neg_count.value_counts()
-
-reviews = pd.DataFrame(df.groupby(["Hotel_Name"])["pos_count","neg_count"].sum())
-
-print(reviews.head())
-
-reviews["HoteL_Name"] = reviews.index
-reviews.index = range(reviews.shape[0])
-reviews.head()
-
-reviews["total"] = reviews["pos_count"] + reviews["neg_count"]
-reviews["pos_ratio"] = reviews["pos_count"].astype("float")/reviews["total"].astype("float")
-
-famous_hotels = reviews.sort_values(by = "total",ascending=False).head(100)
-pd.set_option('display.max_colwidth', 2000)
-popular = famous_hotels["HoteL_Name"].values[:20]
-popular_hotels =df.loc[df['Hotel_Name'].isin(popular)][[
-    "Hotel_Name","Hotel_Address",'Average_Score','lat','lng'
-    ]].drop_duplicates()
-maps_osm = folium.Map(location=[47, 6], 
-    zoom_start=5, tiles = 'Stamen Toner' )
-popular_hotels.apply(lambda row:folium.Marker(
-    location=[row["lat"], row["lng"]]).add_to(maps_osm), axis=1)
-
-print(maps_osm)
-
-print(popular_hotels)
-
-pos = famous_hotels.sort_values(by = "pos_ratio",ascending=False)["HoteL_Name"].head(20).values
-famous_pos = df.loc[df['Hotel_Name'].isin(pos)][[
-    "Hotel_Name","Hotel_Address",'lat','lng','Average_Score']].drop_duplicates()
-positive_map = folium.Map(location=[47, 6], zoom_start=5, tiles = 'Stamen Toner' )
-famous_pos.apply(lambda row:folium.Marker(location=[row["lat"], row["lng"]]).add_to(positive_map), axis=1)
-
-print(positive_map)
-
-print(famous_pos)
-
-reviews.to_pickle('reviews')
+b[:10]
 
 
-
-
+# __Sebanyak 127757 reviews adalah murni negatif__
