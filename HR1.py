@@ -1,66 +1,167 @@
-import numpy as np 
-import pandas as pd 
-import time
-from collections import Counter
-import re, nltk
-from nltk import word_tokenize
-from nltk.corpus import stopwords
-from nltk.stem import PorterStemmer
-from nltk.stem import WordNetLemmatizer
-import folium
-from matplotlib.colors import LinearSegmentedColormap
+#!/usr/bin/env python
+# coding: utf-8
+
+# # Rekomendasi Hotel Terbaik di Eropa
+
+# ### Data Source
+
+# Data yang digunakan bersumber dari situs Booking.com yang diakses melalui kaggle. Semua data dalam file sudah tersedia untuk umum bagi semua orang. __[Unduh]__ (https://drive.google.com/open?id=1GdbBCMtLCwRYvsOrqBODcaOq9BfDGG8z)
+
+# Dataset ini terdiri dari 515.738 review pelanggan dan score terhadap 1492 hotel mewah di Eropa. 
+# Terdapat 17 features dari dataset ini, yaitu:
+# 1. Hotel_Address: Address of hotel.
+# 2. Review_Date: Date when reviewer posted the corresponding review.
+# 3. Average_Score: Average Score of the hotel, calculated based on the latest comment in the last year.
+# 4. Hotel_Name: Name of Hotel
+# 5. Reviewer_Nationality: Nationality of Reviewer
+# 6. Negative_Review: Negative Review the reviewer gave to the hotel. If the reviewer does not give the negative review, then it should be: 'No Negative'
+# 7. Review_Total_Negative_Word_Counts: Total number of words in the negative review.
+# 8. Positive_Review: Positive Review the reviewer gave to the hotel. If the reviewer does not give the negative review, then it should be: 'No Positive'
+# 9. Review_Total_Positive_Word_Counts: Total number of words in the positive review.
+# 10. Reviewer_Score: Score the reviewer has given to the hotel, based on his/her experience
+# 11. Total_Number_of_Reviews_Reviewer_Has_Given: Number of Reviews the reviewers has given in the past.
+# 12. Total_Number_of_Reviews: Total number of valid reviews the hotel has.
+# 13. Tags: Tags reviewer gave the hotel.
+# 14. days_since_review: Duration between the review date and scrape date.
+# 15. Additional_Number_of_Scoring: There are also some guests who just made a scoring on the service rather than a review. This  number indicates how many valid scores without review in there.
+# 16. lat: Latitude of the hotel
+# 17. lng: longtitude of the hotel
+
+# ### 1. Load Data
+
+# In[21]:
+
+
+get_ipython().run_line_magic('matplotlib', 'inline')
+import pandas as pd
+import numpy as np
+from matplotlib import pyplot as plt
+import math
+
+import seaborn as sns
+
+import cufflinks as cf
+
+import warnings
+warnings.filterwarnings('ignore')
+
+
+# In[22]:
+
+
+data = pd.read_csv("Hotel_Reviews.csv")
+
+
+# In[23]:
+
+
+data.head()
+
+
+# ### 2.  Data Introduction
+
+# In[24]:
+
+
+data.shape
+
+
+# In[25]:
+
+
+for i in data.columns:
+    print(i)
+
+
+# In[26]:
+
+
+len(data["Hotel_Name"].unique())
+
+
+# ### 3. Data Cleaning
+
+# In[27]:
+
+
+#Menghapus duplikasi reviews dari dataset
+print(sum(data.duplicated()))
+data = data.drop_duplicates()
+print('After removing Duplicates: {}'.format(data.shape))
+
+
+# In[28]:
+
+
+#Mencari missing values dalam dataset##
 import missingno as msno
+msno.matrix(data)
 
-# from subprocess import check_output
-# print(check_output(["ls", "Bookingcom\Hotel_Reviews.csv"]).decode("utf8"))
 
-df = pd.read_csv('Hotel_Reviews.csv')
-# print(df.columns)
-# print(df.shape) #(515738, 17)
+# Terdapat beberapa missing values pada kolom lat (latitude) dan lng (longitude)
 
-# print('Number of data points : ', df.shape[0], '\nNumber of features: ', df.shape[1])
-# print(df.head())
+# In[29]:
 
-# print(sum(df.duplicated())) #526 reviews are duplicated
-df = df.drop_duplicates()   
-# print('After removing duplicates: {}'.format(df.shape))
 
-# print(msno.matrix(df))  #AxesSubplot(0.125,0.11;0.698618x0.77)
+nan = lambda data: data[data.isnull().any(axis=1)]
+nan_data = nan(data)
+nan_data = nan_data[['Hotel_Name','lat','lng']]
+print('Number of missing values in the dataset: {}'.format(len(nan_data)))
 
-nans = lambda df: df[df.isnull().any(axis = 1)]
-nans_df = nans(df)
-nans_df = nans_df[['Hotel_Name', 'lat', 'lng']]
-# print('Number of missing values in the dataset: {}'.format(len(nans_df)))   #3268
 
-# print(nans_df.Hotel_Name.describe())
+# In[30]:
 
-# print(nans_df.Hotel_Name.value_counts())
 
-# print('No of reviews in the dataset to that Hotel:')
-# print('Fleming s Selection Hotel Wien City: {}'.format(len(df.loc[df.Hotel_Name == 'Fleming s Selection Hotel Wien City'])))
-# print('Hotel City Central: {}'.format(len(df.loc[df.Hotel_Name == 'Hotel City Central'])))
-# print('Hotel Atlanta: {}'.format(len(df.loc[df.Hotel_Name == 'Hotel Atlanta'])))
-# print('Maison Albar Hotel Paris Op ra Diamond: {}'.format(len(df.loc[df.Hotel_Name == 'Maison Albar Hotel Paris Op ra Diamond'])))
-# print('Hotel Daniel Vienna: {}'.format(len(df.loc[df.Hotel_Name == 'Hotel Daniel Vienna'])))
-# print('Hotel Pension Baron am Schottentor: {}'.format(len(df.loc[df.Hotel_Name == 'Hotel Pension Baron am Schottentor'])))
-# print('Austria Trend Hotel Schloss Wilhelminenberg Wien: {}'.format(len(df.loc[df.Hotel_Name == 'Austria Trend Hotel Schloss Wilhelminenberg Wien'])))
-# print('Derag Livinghotel Kaiser Franz Joseph Vienna: {}'.format(len(df.loc[df.Hotel_Name == 'Derag Livinghotel Kaiser Franz Joseph Vienna'])))
-# print('NH Collection Barcelona Podium: {}'.format(len(df.loc[df.Hotel_Name == 'NH Collection Barcelona Podium'])))
-# print('City Hotel Deutschmeister: {}'.format(len(df.loc[df.Hotel_Name == 'City Hotel Deutschmeister'])))
-# print('Hotel Park Villa: {}'.format(len(df.loc[df.Hotel_Name == 'Hotel Park Villa'])))
-# print('Cordial Theaterhotel Wien: {}'.format(len(df.loc[df.Hotel_Name == 'Cordial Theaterhotel Wien'])))
-# print('Holiday Inn Paris Montmartre: {}'.format(len(df.loc[df.Hotel_Name == 'Holiday Inn Paris Montmartre'])))
-# print('Roomz Vienna: {}'.format(len(df.loc[df.Hotel_Name == 'Roomz Vienna'])))
-# print('Mercure Paris Gare Montparnasse: {}'.format(len(df.loc[df.Hotel_Name == 'Mercure Paris Gare Montparnasse'])))
-# print('Renaissance Barcelona Hotel: {}'.format(len(df.loc[df.Hotel_Name == 'Renaissance Barcelona Hotel'])))
-# print('Hotel Advance: {}'.format(len(df.loc[df.Hotel_Name == 'Hotel Advance'])))
+nan_data.Hotel_Name.describe()
 
+
+# Ada 3268 NaN (missing values) yang terdapat pada 17 hotel (1,13% dari total hotel) 
+
+# In[31]:
+
+
+#Mencari hotel yang memiliki missing values
+nan_data.Hotel_Name.value_counts()
+
+
+# Mengisi missing values pada kolom lat dan lng pada 17 hotel tersebut melalui informasi pada kolom Hotel_Address.
+
+# In[32]:
+
+
+print('No of reviews in the dataset to that Hotel:')
+print('Fleming s Selection Hotel Wien City: {}'.format(len(data.loc[data.Hotel_Name == 'Fleming s Selection Hotel Wien City'])))
+print('Hotel City Central: {}'.format(len(data.loc[data.Hotel_Name == 'Hotel City Central'])))
+print('Hotel Atlanta: {}'.format(len(data.loc[data.Hotel_Name == 'Hotel Atlanta'])))
+print('Maison Albar Hotel Paris Op ra Diamond: {}'.format(len(data.loc[data.Hotel_Name == 'Maison Albar Hotel Paris Op ra Diamond'])))
+print('Hotel Daniel Vienna: {}'.format(len(data.loc[data.Hotel_Name == 'Hotel Daniel Vienna'])))
+print('Hotel Pension Baron am Schottentor: {}'.format(len(data.loc[data.Hotel_Name == 'Hotel Pension Baron am Schottentor'])))
+print('Austria Trend Hotel Schloss Wilhelminenberg Wien: {}'.format(len(data.loc[data.Hotel_Name == 'Austria Trend Hotel Schloss Wilhelminenberg Wien'])))
+print('Derag Livinghotel Kaiser Franz Joseph Vienna: {}'.format(len(data.loc[data.Hotel_Name == 'Derag Livinghotel Kaiser Franz Joseph Vienna'])))
+print('NH Collection Barcelona Podium: {}'.format(len(data.loc[data.Hotel_Name == 'NH Collection Barcelona Podium'])))
+print('City Hotel Deutschmeister: {}'.format(len(data.loc[data.Hotel_Name == 'City Hotel Deutschmeister'])))
+print('Hotel Park Villa: {}'.format(len(data.loc[data.Hotel_Name == 'Hotel Park Villa'])))
+print('Cordial Theaterhotel Wien: {}'.format(len(data.loc[data.Hotel_Name == 'Cordial Theaterhotel Wien'])))
+print('Holiday Inn Paris Montmartre: {}'.format(len(data.loc[data.Hotel_Name == 'Holiday Inn Paris Montmartre'])))
+print('Roomz Vienna: {}'.format(len(data.loc[data.Hotel_Name == 'Roomz Vienna'])))
+print('Mercure Paris Gare Montparnasse: {}'.format(len(data.loc[data.Hotel_Name == 'Mercure Paris Gare Montparnasse'])))
+print('Renaissance Barcelona Hotel: {}'.format(len(data.loc[data.Hotel_Name == 'Renaissance Barcelona Hotel'])))
+print('Hotel Advance: {}'.format(len(data.loc[data.Hotel_Name == 'Hotel Advance'])))
+
+
+# Mengisi missing values pada kolom lat dan lng secara manual. 
+# Untuk mengisi lat, lng Hotel dapat menggunakan informasi pada situs ini [http://latlong.org/]
+
+# In[33]:
+
+
+#Input manual lat hotel
 loc_lat = {'Fleming s Selection Hotel Wien City':48.209270,
-      'Hotel City Central':48.2136,
-      'Hotel Atlanta':48.210033,
-      'Maison Albar Hotel Paris Op ra Diamond':48.875343,
-      'Hotel Daniel Vienna':48.1888,
-      'Hotel Pension Baron am Schottentor':48.216701,
+       'Hotel City Central':48.2136,
+       'Hotel Atlanta':48.210033,
+       'Maison Albar Hotel Paris Op ra Diamond':48.875343,
+       'Hotel Daniel Vienna':48.1888,
+       'Hotel Pension Baron am Schottentor':48.216701,
       'Austria Trend Hotel Schloss Wilhelminenberg Wien':48.2195,
       'Derag Livinghotel Kaiser Franz Joseph Vienna':48.245998,
       'NH Collection Barcelona Podium':41.3916,
@@ -72,13 +173,18 @@ loc_lat = {'Fleming s Selection Hotel Wien City':48.209270,
       'Mercure Paris Gare Montparnasse':48.840012,
       'Renaissance Barcelona Hotel':41.392673,
       'Hotel Advance':41.383308}
-    
+
+
+# In[34]:
+
+
+#Input manual lng hotel
 loc_lng ={'Fleming s Selection Hotel Wien City':16.353479,
-      'Hotel City Central':16.3799,
-      'Hotel Atlanta':16.363449,
-      'Maison Albar Hotel Paris Op ra Diamond':2.323358,
-      'Hotel Daniel Vienna':16.3840,
-      'Hotel Pension Baron am Schottentor':16.359819,
+       'Hotel City Central':16.3799,
+       'Hotel Atlanta':16.363449,
+       'Maison Albar Hotel Paris Op ra Diamond':2.323358,
+       'Hotel Daniel Vienna':16.3840,
+       'Hotel Pension Baron am Schottentor':16.359819,
       'Austria Trend Hotel Schloss Wilhelminenberg Wien':16.2856,
       'Derag Livinghotel Kaiser Franz Joseph Vienna':16.341080,
       'NH Collection Barcelona Podium':2.1779,
@@ -91,12 +197,25 @@ loc_lng ={'Fleming s Selection Hotel Wien City':16.353479,
       'Renaissance Barcelona Hotel':2.167494,
       'Hotel Advance':2.162828}
 
-df['lat'] = df['lat'].fillna(df['Hotel_Name'].apply(lambda x: loc_lat.get(x)))
 
-df['lng'] = df['lng'].fillna(df['Hotel_Name'].apply(lambda x: loc_lng.get(x)))
+# In[35]:
 
-print(msno.matrix(df))
 
-import pickle
-df.to_pickle('After_filling_Nans')
+#Menambahkan lat hotel ke dalam kolom lat
+data['lat'] = data['lat'].fillna(data['Hotel_Name'].apply(lambda x: loc_lat.get(x)))
+#Menambahkan lng hotel ke dalam kolom lng
+data['lng'] = data['lng'].fillna(data['Hotel_Name'].apply(lambda x: loc_lng.get(x)))
+
+
+# In[36]:
+
+
+msno.matrix(data)
+
+
+# In[37]:
+
+
+#Menyimpan data ke dalam file pickle
+data.to_pickle('Clean_Data')
 
