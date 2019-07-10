@@ -249,6 +249,7 @@ print('After removing Duplicates: {}'.format(data.shape))
 ```
 
 526
+
 After removing Duplicates: (515212, 17)
     
 
@@ -284,9 +285,13 @@ nan_data.Hotel_Name.describe()
 
 
 count                                    3268
+
 unique                                     17
+
 top       Fleming s Selection Hotel Wien City
+
 freq                                      658
+
 Name: Hotel_Name, dtype: object
 
 
@@ -303,22 +308,39 @@ nan_data.Hotel_Name.value_counts()
 
 
 Fleming s Selection Hotel Wien City                 658
+
 Hotel City Central                                  563
+
 Hotel Atlanta                                       389
+
 Maison Albar Hotel Paris Op ra Diamond              290
+
 Hotel Daniel Vienna                                 245
+
 Hotel Pension Baron am Schottentor                  223
+
 Austria Trend Hotel Schloss Wilhelminenberg Wien    194
+
 Derag Livinghotel Kaiser Franz Joseph Vienna        147
+
 NH Collection Barcelona Podium                      146
+
 City Hotel Deutschmeister                            93
+
 Hotel Park Villa                                     61
+
 Cordial Theaterhotel Wien                            57
+
 Holiday Inn Paris Montmartre                         55
+
 Roomz Vienna                                         49
+
 Mercure Paris Gare Montparnasse                      37
+
 Renaissance Barcelona Hotel                          33
+
 Hotel Advance                                        28
+
 Name: Hotel_Name, dtype: int64
 
 
@@ -348,26 +370,44 @@ print('Hotel Advance: {}'.format(len(data.loc[data.Hotel_Name == 'Hotel Advance'
 ```
 
 Number of reviews in the dataset to that Hotel:
+
 Fleming s Selection Hotel Wien City: 658
+
 Hotel City Central: 563
+
 Hotel Atlanta: 389
+
 Maison Albar Hotel Paris Op ra Diamond: 290
+
 Hotel Daniel Vienna: 245
+
 Hotel Pension Baron am Schottentor: 223
+
 Austria Trend Hotel Schloss Wilhelminenberg Wien: 194
+
 Derag Livinghotel Kaiser Franz Joseph Vienna: 147
+
 NH Collection Barcelona Podium: 146
+
 City Hotel Deutschmeister: 93
+
 Hotel Park Villa: 61
+
 Cordial Theaterhotel Wien: 57
+
 Holiday Inn Paris Montmartre: 55
+
 Roomz Vienna: 49
+
 Mercure Paris Gare Montparnasse: 37
+
 Renaissance Barcelona Hotel: 33
+
 Hotel Advance: 28
     
 
 Mengisi missing values pada kolom lat dan lng secara manual. 
+
 Untuk mengisi lat, lng Hotel dapat menggunakan informasi pada situs ini [http://latlong.org/]
 
 
@@ -476,9 +516,13 @@ data.Hotel_Name.describe()
 
 
 count                                         515212
+
 unique                                          1492
+
 top       Britannia International Hotel Canary Wharf
+
 freq                                            4789
+
 Name: Hotel_Name, dtype: object
 
 
@@ -563,9 +607,13 @@ data.Reviewer_Nationality.describe()
 
 
 count               515212
+
 unique                 227
+
 top        United Kingdom 
+
 freq                245110
+
 Name: Reviewer_Nationality, dtype: object
 
 
@@ -581,15 +629,25 @@ print(Reviewer_Nat_Count[:10])
 ```
 
 United Kingdom               245110
+
 United States of America      35349
+
 Australia                     21648
+
 Ireland                       14814
+
 United Arab Emirates          10229
+
 Saudi Arabia                   8940
+
 Netherlands                    8757
+
 Switzerland                    8669
+
 Germany                        7929
+
 Canada                         7883
+
 Name: Reviewer_Nationality, dtype: int64
     
 
@@ -604,9 +662,13 @@ data.Review_Date.describe()
 
 
 count       515212
+
 unique         731
+
 top       8/2/2017
+
 freq          2584
+
 Name: Review_Date, dtype: object
 
 
@@ -649,15 +711,25 @@ Reviewers_freq[:10]
 
 
 1     154506
+
 2      67011
+
 3      46802
+
 4      34991
+
 5      27604
+
 6      22593
+
 7      18599
+
 8      16126
+
 9      13526
+
 10     11702
+
 Name: Total_Number_of_Reviews_Reviewer_Has_Given, dtype: int64
 
 
@@ -676,15 +748,25 @@ pos_words[:10]
 
 
 0     35904
+
 6     26887
+
 5     26809
+
 4     24624
+
 7     24517
+
 8     23219
+
 3     22505
+
 9     21188
+
 2     20905
+
 10    19597
+
 Name: Review_Total_Positive_Word_Counts, dtype: int64
 
 
@@ -782,15 +864,25 @@ neg_words[:10]
 
 
 0     127757
+
 2      24631
+
 3      18126
+
 6      17726
+
 5      16788
+
 7      16123
+
 4      15049
+
 8      14709
+
 9      13623
+
 10     12409
+
 Name: Review_Total_Negative_Word_Counts, dtype: int64
 
 
@@ -925,7 +1017,9 @@ data["pos_count"].value_counts()
 
 
 1    479308
+
 0     35904
+
 Name: pos_count, dtype: int64
 
 
@@ -944,7 +1038,9 @@ data["neg_count"].value_counts()
 
 
 1    387455
+
 0    127757
+
 Name: neg_count, dtype: int64
 
 
@@ -1106,14 +1202,23 @@ for i in reviews.sort_values(by = "count",ascending=False)["Hotel_Name"].head(10
 ```
 
 Britannia International Hotel Canary Wharf
+
 Strand Palace Hotel
+
 Park Plaza Westminster Bridge London
+
 Copthorne Tara Hotel London Kensington
+
 DoubleTree by Hilton Hotel London Tower of London
+
 Grand Royale London Hyde Park
+
 Holiday Inn London Kensington
+
 Hilton London Metropole
+
 Millennium Gloucester Hotel London
+
 Intercontinental London The O2
     
 
@@ -1211,14 +1316,23 @@ for i in famous_hotels.sort_values(by = "pos_ratio",ascending=False)["Hotel_Name
 ```
 
 Hotel Berna
+
 Club Quarters Hotel Lincoln s Inn Fields
+
 Apex Temple Court Hotel
+
 Apex City Of London Hotel
+
 Hotel Esther a
+
 Urban Lodge Hotel
+
 Hilton London Canary Wharf
+
 The Piccadilly London West End
+
 Shangri La Hotel at The Shard London
+
 The Student Hotel Amsterdam City
     
 
@@ -1315,15 +1429,15 @@ temp.sort_values("std").index[0:20]
 
 
 Index(['H10 Casa Mimosa 4 Sup', 'Hotel Casa Camper',
-'H tel de La Tamise Esprit de France', 'Le Narcisse Blanc Spa',
-'Hotel Eiffel Blomet', '45 Park Lane Dorchester Collection', '41',
-'Hotel Stendhal Place Vend me Paris MGallery by Sofitel',
-'H tel D Aubusson', 'Hotel The Serras', 'Hotel Am Stephansplatz',
-'Lansbury Heritage Hotel', 'Covent Garden Hotel', 'The Soho Hotel',
-'Catalonia Magdalenes', 'H tel Saint Paul Rive Gauche',
-'Milestone Hotel Kensington', 'Ritz Paris', 'H tel Fabric',
-'Le 123 S bastopol Astotel'],
-dtype='object', name='Hotel_Name')
+      'H tel de La Tamise Esprit de France', 'Le Narcisse Blanc Spa',
+      'Hotel Eiffel Blomet', '45 Park Lane Dorchester Collection', '41',
+      'Hotel Stendhal Place Vend me Paris MGallery by Sofitel',
+      'H tel D Aubusson', 'Hotel The Serras', 'Hotel Am Stephansplatz',
+      'Lansbury Heritage Hotel', 'Covent Garden Hotel', 'The Soho Hotel',
+      'Catalonia Magdalenes', 'H tel Saint Paul Rive Gauche',
+      'Milestone Hotel Kensington', 'Ritz Paris', 'H tel Fabric',
+      'Le 123 S bastopol Astotel'],
+      dtype='object', name='Hotel_Name')
 
 
 
