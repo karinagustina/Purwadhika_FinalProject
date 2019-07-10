@@ -196,21 +196,37 @@ for i in data.columns:
 ```
 
 Hotel_Address
+
 Additional_Number_of_Scoring
+
 Review_Date
+
 Average_Score
+
 Hotel_Name
+
 Reviewer_Nationality
+
 Negative_Review
+
 Review_Total_Negative_Word_Counts
+
 Total_Number_of_Reviews
+
 Positive_Review
+
 Review_Total_Positive_Word_Counts
+
 Total_Number_of_Reviews_Reviewer_Has_Given
+
 Reviewer_Score
+
 Tags
+
 days_since_review
+
 lat
+
 lng
     
 
