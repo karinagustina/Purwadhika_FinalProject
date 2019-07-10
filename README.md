@@ -1,6 +1,3 @@
-# Purwadhika_FinalProject
-
-
 # Rekomendasi Hotel Terbaik di Eropa
 
 ### Data Source
